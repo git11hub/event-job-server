@@ -22,6 +22,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 client.connect(err => {
     console.log("connection err khaisire", err);
     const jobCollection = client.db("event-job").collection("job-list");
+    const appliedJobCollection = client.db("event-job").collection("appliedJob");
 
     app.get('/job-list', (req, res) => {
         jobCollection.find()
@@ -29,13 +30,32 @@ client.connect(err => {
             res.send(items);
             // console.log('from database hoho', items);
         })
-    })
+    });
+
+    app.get('/appliedJob', (req, res) => {
+        appliedJobCollection.find()
+        .toArray((err, jobItems) => {
+            res.send(jobItems);
+            // console.log('from database hoho', items);
+        })
+    });
     
     app.post('/addEvent', (req, res) => {
         const newEvent = req.body;
         console.log(newEvent);
         console.log('adding new event', newEvent);
         jobCollection.insertOne(newEvent)
+        .then(result => {
+            console.log('inserted count', result.insertedCount);
+            res.send(result.insertedCount > 0)
+        })
+    });
+
+    app.post('/appliedJob', (req, res) => {
+        const newAppliedJob = req.body;
+        console.log(newAppliedJob);
+        console.log('adding new event', newAppliedJob);
+        appliedJobCollection.insertOne(newAppliedJob)
         .then(result => {
             console.log('inserted count', result.insertedCount);
             res.send(result.insertedCount > 0)
